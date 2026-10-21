@@ -1,0 +1,159 @@
+{
+  "name": "WhatsApp schedule workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-schedule",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [-1152, -304],
+      "id": "8bad764e-7b8b-4cf6-a3ec-0bcc8bf56506",
+      "name": "Webhook",
+      "webhookId": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "71cc15ff-f13c-41cb-9f8f-8b4cdc498e96",
+              "leftValue": "={{ $json.body.payload.from }}",
+              "rightValue": "YOUR_GROUP_ID@g.us",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "0117e0fb-b97c-4598-bafa-471729b749c7",
+              "leftValue": "={{ $json.body.payload.participant }}",
+              "rightValue": "YOUR_BOSS_ID@lid",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [-912, -304],
+      "id": "47afbcde-30a7-48c5-aa4b-0a70f0a8c612",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d6007efe-b99d-4470-a3a5-29fafe455fdf",
+              "leftValue": "={{ $json.body.payload.body }}",
+              "rightValue": "schedule|sched|sked|schedules",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [-688, -320],
+      "id": "3258d337-f01f-4934-bed6-0eb38e18d70a",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cb125af3-be86-4664-af52-14dc6defd047",
+              "name": "date",
+              "value": "={{ $now.setZone('Asia/Manila').toFormat('yyyy-MM-dd') }}",
+              "type": "string"
+            },
+            {
+              "id": "9a05f053-5225-4ec9-b5ca-95d36e32882f",
+              "name": "time_received",
+              "value": "={{ $now.setZone('Asia/Manila').toFormat('HH:mm') }}",
+              "type": "string"
+            },
+            {
+              "id": "4b391b4b-36c8-4cd1-ba73-95780444e56e",
+              "name": "message",
+              "value": "={{ $json.body.payload.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [-496, -320],
+      "id": "76f0ca8d-2aef-4d5b-a356-178096da5beb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "YOUR_EMAIL@gmail.com",
+        "subject": "=Schedule for {{ $json.date }}",
+        "emailType": "text",
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [-288, -320],
+      "id": "c5bac5eb-edb2-4cd5-8eba-2aaa5f9e264b",
+      "name": "Send a message",
+      "webhookId": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "If", "type": "main", "index": 0 }]]
+    },
+    "If": {
+      "main": [[{ "node": "If1", "type": "main", "index": 0 }]]
+    },
+    "If1": {
+      "main": [[{ "node": "Edit Fields", "type": "main", "index": 0 }]]
+    },
+    "Edit Fields": {
+      "main": [[{ "node": "Send a message", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "tags": []
+}
